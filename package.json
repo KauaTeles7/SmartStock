@@ -1,0 +1,18 @@
+{
+  "name": "smart-stock",
+  "version": "2.1.0",
+  "description": "Smart Stock - painel visual responsivo para gestão de ferramentas com ESP8266, RC522, Node.js e SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "rfid": "node leitor.js",
+    "test:serial": "node testeserial.js",
+    "db:init": "node banco.js",
+    "historico": "node historico.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "serialport": "^12.0.0",
+    "sqlite3": "^5.1.7"
+  }
+}

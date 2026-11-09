@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10264a">
+  <meta name="description" content="Smart Stock — controle inteligente de ferramentas e patrimônio com RFID.">
+  <title>Smart Stock | Gestão inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #10264a;
+      --navy-2: #173969;
+      --blue: #246cf4;
+      --blue-2: #4389ff;
+      --cyan: #45d0e4;
+      --bg: #f3f7fd;
+      --card: #ffffff;
+      --ink: #152744;
+      --muted: #7d8ca5;
+      --line: #e7edf6;
+      --green: #159b72;
+      --green-bg: #e8f8f1;
+      --amber: #c98218;
+      --amber-bg: #fff5e4;
+      --red: #d94e5b;
+      --red-bg: #fff0f1;
+      --purple: #8056d8;
+      --shadow: 0 14px 38px rgba(28, 62, 112, .075);
+      --shadow-soft: 0 7px 22px rgba(28, 62, 112, .055);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .layout { min-height: 100vh; }
+
+    /* Navegação */
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 30;
+      padding: 25px 17px 18px; color: #fff; display: flex; flex-direction: column;
+      background: linear-gradient(180deg, #10264a 0%, #102d57 55%, #123765 100%);
+      box-shadow: 12px 0 34px rgba(15, 40, 79, .08);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 10px 26px; border-bottom: 1px solid rgba(255,255,255,.12); }
+    .brand-mark { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #4c8dff, #25c5db); box-shadow: 0 9px 22px rgba(38, 127, 255, .35); }
+    .brand-mark svg { width: 25px; height: 25px; }
+    .brand b { display: block; font: 800 16px 'Manrope', sans-serif; letter-spacing: .4px; }
+    .brand small { display: block; margin-top: 4px; color: #92a9cc; font-size: 9px; font-weight: 700; letter-spacing: 1.7px; }
+    .nav-label { padding: 25px 12px 10px; color: #7893ba; font-size: 9px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; }
+    .nav button { width: 100%; border: 0; border-radius: 12px; margin: 3px 0; padding: 12px 13px; display: flex; align-items: center; gap: 13px; color: #b4c4dc; background: transparent; text-align: left; font-size: 12px; font-weight: 600; transition: .2s ease; }
+    .nav button .ico { width: 22px; height: 22px; display: grid; place-items: center; color: #91a9cd; }
+    .nav button .ico svg { width: 18px; height: 18px; }
+    .nav button:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .nav button.active { color: #fff; background: linear-gradient(100deg, rgba(60,129,255,.3), rgba(60,129,255,.12)); box-shadow: inset 3px 0 #54d2e5; }
+    .nav button.active .ico { color: #75e4ef; }
+    .sidebar-card { margin-top: auto; padding: 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.07); }
+    .sidebar-card-top { display: flex; align-items: center; gap: 9px; color: #eaf2ff; font-size: 11px; font-weight: 700; }
+    .sidebar-card-top span { width: 8px; height: 8px; border-radius: 50%; background: #51d3a7; box-shadow: 0 0 0 4px rgba(81,211,167,.13); }
+    .sidebar-card p { margin: 8px 0 0; color: #91a9ca; font-size: 10px; line-height: 1.6; }
+    .sidebar-foot { padding: 17px 10px 2px; color: #7791b6; font-size: 9px; line-height: 1.7; }
+
+    /* Estrutura principal */
+    .main { min-height: 100vh; margin-left: 260px; }
+    .topbar { height: 78px; position: sticky; top: 0; z-index: 20; padding: 0 38px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.91); backdrop-filter: blur(16px); }
+    .top-left { display: flex; align-items: center; gap: 12px; }
+    .crumb { margin-bottom: 3px; color: #91a0b6; font-size: 9px; font-weight: 800; letter-spacing: 1.3px; }
+    .topbar h1 { margin: 0; color: var(--ink); font: 800 18px 'Manrope', sans-serif; }
+    .top-actions { display: flex; align-items: center; gap: 13px; }
+    .system-pill { display: flex; align-items: center; gap: 9px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 30px; color: #63738d; background: #fff; font-size: 10px; font-weight: 700; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #d89c36; box-shadow: 0 0 0 4px #fff3df; }
+    .dot.ok { background: #20b581; box-shadow: 0 0 0 4px #e6f8f1; }
+    .dot.error { background: #df5965; box-shadow: 0 0 0 4px #ffeded; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #2869df; background: #eaf1ff; font-size: 11px; font-weight: 800; }
+    .mobile-toggle { display: none; width: 36px; height: 36px; border: 0; border-radius: 10px; color: #38577f; background: #edf3fc; font-size: 18px; }
+    .content { max-width: 1560px; margin: 0 auto; padding: 30px 38px 42px; }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp .26s ease; }
+    @keyframes fadeUp { from { opacity: .35; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* Hero do painel */
+    .dash-hero { min-height: 255px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 31px 34px; margin-bottom: 21px; border-radius: 24px; color: #fff; background: linear-gradient(112deg, #10294f 0%, #174a8d 57%, #1767c8 100%); box-shadow: 0 18px 42px rgba(20, 72, 145, .18); }
+    .dash-hero:before, .dash-hero:after { content: ''; position: absolute; border: 1px solid rgba(255,255,255,.11); border-radius: 50%; pointer-events: none; }
+    .dash-hero:before { width: 390px; height: 390px; right: 130px; top: -190px; }
+    .dash-hero:after { width: 300px; height: 300px; right: 170px; top: -145px; }
+    .hero-copy { position: relative; z-index: 2; max-width: 540px; }
+    .hero-kicker { display: inline-flex; align-items: center; gap: 8px; color: #9ee8f2; font-size: 9px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase; }
+    .hero-kicker span { width: 6px; height: 6px; border-radius: 50%; background: #6fe1eb; box-shadow: 0 0 0 5px rgba(111,225,235,.13); }
+    .hero-copy h2 { max-width: 500px; margin: 13px 0 10px; font: 800 clamp(25px, 3vw, 35px)/1.12 'Manrope', sans-serif; letter-spacing: -.9px; }
+    .hero-copy h2 em { color: #5ce0ec; font-style: normal; }
+    .hero-copy p { max-width: 450px; margin: 0; color: #c1d3ed; font-size: 12px; line-height: 1.8; }
+    .hero-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 21px; }
+    .hero-btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 15px; border: 1px solid rgba(255,255,255,.25); border-radius: 10px; color: #fff; background: rgba(255,255,255,.11); font-size: 10px; font-weight: 800; transition: .2s; }
+    .hero-btn.primary { color: #1554a5; border-color: #fff; background: #fff; box-shadow: 0 7px 20px rgba(4,26,62,.14); }
+    .hero-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .hero-visual { width: min(42%, 395px); min-width: 270px; height: 205px; position: relative; z-index: 1; }
+    .hero-orbit { position: absolute; width: 220px; height: 220px; right: 46px; top: -8px; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; box-shadow: 0 0 0 24px rgba(255,255,255,.035), 0 0 0 50px rgba(255,255,255,.025); }
+    .device-card { position: absolute; width: 260px; height: 170px; right: 34px; top: 14px; padding: 14px; border: 1px solid rgba(255,255,255,.3); border-radius: 17px; background: linear-gradient(145deg, rgba(255,255,255,.23), rgba(255,255,255,.09)); box-shadow: 0 20px 40px rgba(5,25,58,.25); backdrop-filter: blur(12px); transform: rotate(-5deg); }
+    .device-top { display: flex; align-items: center; justify-content: space-between; color: #dbeaff; font-size: 8px; font-weight: 800; letter-spacing: 1px; }
+    .device-top span:last-child { color: #83f0c5; letter-spacing: .5px; }
+    .device-middle { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; }
+    .rfid-chip { width: 95px; height: 95px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.22); border-radius: 18px; background: rgba(7,35,77,.28); }
+    .rfid-chip svg { width: 57px; height: 57px; color: #a5f3fb; }
+    .device-lines { width: 112px; }
+    .device-lines i { display: block; height: 7px; margin: 10px 0; border-radius: 10px; background: rgba(255,255,255,.2); }
+    .device-lines i:nth-child(1) { width: 92%; background: rgba(255,255,255,.75); }
+    .device-lines i:nth-child(2) { width: 73%; }
+    .device-lines i:nth-child(3) { width: 85%; }
+    .device-lines i:nth-child(4) { width: 48%; background: rgba(78,225,190,.55); }
+    .floating-tag { position: absolute; right: 0; bottom: 0; display: flex; align-items: center; gap: 9px; padding: 11px 13px; border: 1px solid rgba(255,255,255,.55); border-radius: 12px; color: #22436d; background: #fff; box-shadow: 0 12px 30px rgba(8,34,71,.2); transform: rotate(3deg); }
+    .floating-tag-icon { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 9px; color: #fff; background: linear-gradient(135deg,#347cff,#25c3d4); }
+    .floating-tag b { display: block; font-size: 9px; }
+    .floating-tag small { display: block; margin-top: 2px; color: #7e8ba2; font-size: 8px; }
+
+    /* Indicadores e painéis */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .stat { min-height: 137px; position: relative; overflow: hidden; padding: 18px 19px; border: 1px solid var(--line); border-radius: 17px; background: #fff; box-shadow: var(--shadow-soft); transition: .2s; }
+    .stat:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: #75849b; font-size: 10px; font-weight: 700; }
+    .stat-icon { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px; color: #276dec; background: #edf3ff; }
+    .stat-icon svg { width: 19px; height: 19px; }
+    .stat strong { display: block; margin-top: 11px; color: #142b4d; font: 800 28px 'Manrope', sans-serif; letter-spacing: -1px; }
+    .stat small { display: block; margin-top: 2px; color: #93a0b3; font-size: 9px; }
+    .stat-accent { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg,#3478fa,#56d2df); }
+    .stat:nth-child(2) .stat-icon { color: var(--green); background: var(--green-bg); }
+    .stat:nth-child(2) .stat-accent { background: linear-gradient(90deg,#16a879,#62d9ae); }
+    .stat:nth-child(3) .stat-icon { color: var(--amber); background: var(--amber-bg); }
+    .stat:nth-child(3) .stat-accent { background: linear-gradient(90deg,#d9982f,#f1c875); }
+    .stat:nth-child(4) .stat-icon { color: var(--purple); background: #f2edff; }
+    .stat:nth-child(4) .stat-accent { background: linear-gradient(90deg,#8056d8,#baa2f4); }
+    .grid-main { display: grid; grid-template-columns: 1.25fr 1fr; gap: 17px; align-items: stretch; }
+    .panel { min-width: 0; margin-bottom: 17px; padding: 21px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: var(--shadow-soft); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    .panel-head h3 { margin: 0; color: #1a3154; font: 800 13px 'Manrope', sans-serif; }
+    .panel-head p { margin: 5px 0 0; color: #92a0b3; font-size: 9px; }
+    .link-btn { border: 0; color: var(--blue); background: transparent; font-size: 10px; font-weight: 800; white-space: nowrap; }
+    .activity-list { display: flex; flex-direction: column; }
+    .activity { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid #f0f3f8; }
+    .activity:last-child { border: 0; }
+    .activity-ico { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; color: var(--green); background: var(--green-bg); font-size: 16px; }
+    .activity-ico.out { color: var(--amber); background: var(--amber-bg); }
+    .activity-main { flex: 1; min-width: 0; }
+    .activity-main b { display: block; overflow: hidden; color: #253957; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .activity-main span { display: block; margin-top: 4px; color: #91a0b4; font-size: 9px; }
+    .activity-time { color: #99a5b6; font-size: 9px; white-space: nowrap; }
+    .stock-bars { display: flex; flex-direction: column; gap: 20px; padding: 8px 0 4px; }
+    .bar-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; color: #425571; font-size: 10px; }
+    .bar-label b { font-weight: 700; }
+    .bar-label span { color: #92a0b3; font-size: 9px; }
+    .bar { height: 9px; overflow: hidden; border-radius: 20px; background: #edf2f8; }
+    .bar i { display: block; height: 100%; border-radius: 20px; background: linear-gradient(90deg,#3478fa,#43c6d9); }
+    .quick-actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .quick { min-height: 116px; padding: 15px; border: 1px solid #e9eef6; border-radius: 15px; color: var(--ink); background: #fbfdff; text-align: left; transition: .2s; }
+    .quick:hover { border-color: #b9d0ff; background: #f6f9ff; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(45,103,203,.08); }
+    .quick-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; color: #fff; background: linear-gradient(135deg,#377cff,#29bfd5); box-shadow: 0 5px 12px rgba(40,111,230,.18); }
+    .quick-icon svg { width: 18px; height: 18px; }
+    .quick b { display: block; margin-top: 10px; font-size: 10px; }
+    .quick small { display: block; margin-top: 4px; color: #91a0b4; font-size: 9px; line-height: 1.5; }
+
+    /* Páginas internas */
+    .section-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin: 4px 0 19px; }
+    .section-title h2 { margin: 0; color: #172d4e; font: 800 22px 'Manrope', sans-serif; letter-spacing: -.5px; }
+    .section-title p { margin: 5px 0 0; color: #8796ac; font-size: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 10px 15px; border: 0; border-radius: 10px; color: #fff; background: linear-gradient(105deg,#2c70f3,#397ff6); box-shadow: 0 6px 15px rgba(47,111,239,.18); font-size: 10px; font-weight: 800; transition: .2s; }
+    .btn:hover { transform: translateY(-1px); filter: brightness(.97); }
+    .btn.light { color: #536783; background: #f0f4fa; box-shadow: none; }
+    .btn.danger { color: var(--red); background: var(--red-bg); box-shadow: none; }
+    .btn.small { min-height: 30px; padding: 7px 10px; font-size: 9px; }
+    .toolbar { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .search { position: relative; flex: 1; max-width: 390px; }
+    .search:before { content: '⌕'; position: absolute; left: 12px; top: 7px; color: #9aa8ba; font-size: 19px; }
+    .input, .search input, .field input, .field select { width: 100%; min-height: 39px; padding: 10px 12px; border: 1px solid #e1e8f1; border-radius: 10px; outline: none; color: var(--ink); background: #fff; font-size: 10px; transition: .2s; }
+    .search input { padding-left: 34px; }
+    .input:focus, .field input:focus, .field select:focus, .search input:focus { border-color: #8eb1ff; box-shadow: 0 0 0 3px rgba(53,109,243,.09); }
+    .table-wrap { overflow: auto; border: 1px solid #edf1f6; border-radius: 13px; }
+    table { width: 100%; border-collapse: collapse; min-width: 610px; }
+    th { padding: 13px 14px; color: #8796aa; background: #f8fafd; text-align: left; font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    td { padding: 13px 14px; border-top: 1px solid #eff3f7; color: #52647f; font-size: 10px; }
+    tbody tr { transition: .15s; }
+    tbody tr:hover { background: #f9fbff; }
+    .tool-name { color: #203754; font-weight: 700; }
+    .muted { color: #94a1b3; }
+    .uid { padding: 5px 8px; border-radius: 7px; color: #60738e; background: #f1f4f8; font: 10px monospace; white-space: nowrap; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 30px; font-size: 8px; font-weight: 800; letter-spacing: .35px; white-space: nowrap; }
+    .badge.green { color: var(--green); background: var(--green-bg); }
+    .badge.amber { color: var(--amber); background: var(--amber-bg); }
+    .badge.red { color: var(--red); background: var(--red-bg); }
+    .actions { display: flex; gap: 5px; }
+    .empty { padding: 26px; color: #93a0b2; text-align: center; font-size: 10px; }
+    .two-col { display: grid; grid-template-columns: 310px minmax(0,1fr); gap: 17px; align-items: start; }
+    .form-panel h3 { margin: 0 0 5px; color: #1b3354; font: 800 13px 'Manrope', sans-serif; }
+    .form-panel > p { margin: 0 0 18px; color: #92a0b3; font-size: 9px; line-height: 1.6; }
+    .field { margin-bottom: 13px; }
+    .field label { display: block; margin-bottom: 6px; color: #62738c; font-size: 9px; font-weight: 800; }
+    .field .hint { margin-top: 5px; color: #a0adbd; font-size: 8px; line-height: 1.5; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-msg { min-height: 15px; margin-top: 10px; font-size: 9px; }
+    .form-msg.error { color: var(--red); }
+    .form-msg.success { color: var(--green); }
+
+    /* RFID */
+    .rfid-banner { min-height: 185px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 25px 29px; margin-bottom: 17px; border-radius: 20px; color: #fff; background: linear-gradient(112deg,#112b52,#1b5599 66%,#2378d7); }
+    .rfid-banner:after { content: ''; position: absolute; width: 230px; height: 230px; right: 65px; top: -115px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; box-shadow: 0 0 0 25px rgba(255,255,255,.04),0 0 0 50px rgba(255,255,255,.025); }
+    .rfid-banner h3 { position: relative; z-index: 1; margin: 8px 0; font: 800 20px 'Manrope', sans-serif; }
+    .rfid-banner p { position: relative; z-index: 1; max-width: 570px; margin: 0; color: #c1d5f0; font-size: 10px; line-height: 1.7; }
+    .rfid-banner-art { position: relative; z-index: 1; width: 95px; height: 95px; flex: 0 0 95px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.24); border-radius: 26px; color: #aaf2f7; background: rgba(255,255,255,.1); box-shadow: 0 0 0 12px rgba(255,255,255,.045); }
+    .rfid-banner-art svg { width: 54px; height: 54px; }
+    .rfid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; align-items: stretch; }
+    .user-select-card { display: flex; align-items: center; gap: 12px; padding: 15px; margin: 15px 0; border: 1px solid #dce8fb; border-radius: 13px; background: #f6f9ff; }
+    .user-select-card .avatar { width: 43px; height: 43px; font-size: 13px; }
+    .user-select-card div:nth-child(2) { flex: 1; min-width: 0; }
+    .user-select-card b { display: block; overflow: hidden; color: #253c5d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .user-select-card small { display: block; margin-top: 4px; color: #8c9bb0; font-size: 9px; }
+    .reader-status { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 23px; text-align: center; }
+    .reader-symbol { width: 82px; height: 82px; position: relative; display: grid; place-items: center; margin: 3px auto 15px; border-radius: 25px; color: #2e76ee; background: linear-gradient(145deg,#edf4ff,#e4f8fb); }
+    .reader-symbol:before,.reader-symbol:after { content: ''; position: absolute; inset: -8px; border: 1px solid #d9e9ff; border-radius: 30px; }
+    .reader-symbol:after { inset: -16px; opacity: .55; }
+    .reader-symbol svg { width: 42px; height: 42px; }
+    .reader-status h3 { margin: 0 0 7px; color: #213957; font: 800 13px 'Manrope', sans-serif; }
+    .reader-status p { max-width: 350px; margin: 0; color: #8796aa; font-size: 9px; line-height: 1.8; }
+    .reader-note { width: 100%; margin-top: 16px; padding: 12px; border: 1px solid #f4e6c8; border-radius: 11px; color: #99702e; background: #fffaf0; text-align: left; font-size: 9px; line-height: 1.7; }
+    .reader-note strong { display: block; margin-bottom: 2px; color: #8c6324; }
+    .footnote { padding: 18px 4px 0; color: #a0adbd; text-align: center; font-size: 8px; letter-spacing: .5px; }
+
+    /* Modal e notificações */
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 60; max-width: min(380px,calc(100vw - 32px)); padding: 13px 17px; border-radius: 12px; color: #fff; background: #17365f; box-shadow: 0 12px 30px rgba(12,35,72,.22); font-size: 10px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .22s; }
+    .toast.show { opacity: 1; transform: none; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(13,29,53,.48); backdrop-filter: blur(5px); }
+    .modal-backdrop.show { display: flex; }
+    .modal { width: min(430px,100%); padding: 22px; border: 1px solid #e7edf6; border-radius: 18px; background: #fff; box-shadow: 0 25px 70px rgba(8,28,58,.22); }
+    .modal h3 { margin: 0 0 18px; color: #1a3153; font: 800 16px 'Manrope',sans-serif; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+    @media (max-width: 1180px) {
+      .content { padding-right: 25px; padding-left: 25px; }
+      .topbar { padding: 0 25px; }
+      .hero-visual { min-width: 230px; transform: scale(.9); transform-origin: right center; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+      .grid-main { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 920px) {
+      .sidebar { width: 245px; transform: translateX(-105%); transition: transform .25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .mobile-toggle { display: grid; place-items: center; }
+      .hero-visual { opacity: .82; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .topbar { height: 68px; padding: 0 15px; }
+      .topbar h1 { font-size: 15px; }
+      .crumb { font-size: 8px; }
+      .system-pill { padding: 8px 9px; font-size: 0; gap: 0; }
+      .system-pill .dot { margin: 0 4px; }
+      .top-actions { gap: 8px; }
+      .content { padding: 20px 14px 32px; }
+      .dash-hero { min-height: 0; padding: 24px 21px; }
+      .hero-copy h2 { font-size: 25px; }
+      .hero-copy p { max-width: 100%; font-size: 10px; }
+      .hero-visual { display: none; }
+      .hero-buttons { margin-top: 17px; }
+      .hero-btn { padding: 10px 12px; font-size: 9px; }
+      .stats { gap: 10px; }
+      .stat { min-height: 124px; padding: 14px; }
+      .stat-top { gap: 7px; font-size: 9px; }
+      .stat-icon { width: 32px; height: 32px; flex: 0 0 32px; }
+      .stat strong { font-size: 24px; }
+      .grid-main,.rfid-layout { grid-template-columns: 1fr; gap: 0; }
+      .panel { padding: 16px; margin-bottom: 13px; }
+      .quick-actions { grid-template-columns: 1fr; }
+      .quick { min-height: 0; display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; }
+      .quick-icon { grid-row: span 2; }
+      .quick b { margin: 0; }
+      .quick small { margin-top: 3px; }
+      .section-title { align-items: flex-start; flex-direction: column; }
+      .section-title h2 { font-size: 20px; }
+      .toolbar { flex-wrap: wrap; }
+      .search { max-width: none; min-width: 180px; }
+      .rfid-banner { min-height: 0; padding: 22px 19px; }
+      .rfid-banner h3 { font-size: 17px; }
+      .rfid-banner-art { width: 65px; height: 65px; flex-basis: 65px; border-radius: 19px; }
+      .rfid-banner-art svg { width: 37px; height: 37px; }
+      .reader-status { padding: 20px 14px; }
+      .activity-time { font-size: 8px; }
+      .footnote { padding-top: 12px; }
+    }
+    @media (max-width: 390px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat { padding: 12px; }
+      .stat-top { align-items: flex-start; }
+      .stat-icon { width: 28px; height: 28px; flex-basis: 28px; }
+      .top-actions .avatar { width: 31px; height: 31px; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z"/><path d="m3.5 7 8.5 5 8.5-5M12 12v10"/><path d="M8 4.3 17 9.5" opacity=".7"/></svg></div>
+        <div><b>SMART STOCK</b><small>GESTÃO INTELIGENTE</small></div>
+      </div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav">
+        <button class="active" data-page="dashboard"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span>Visão geral</button>
+        <button data-page="rfid"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 0 0 7M5.5 5.5a9.2 9.2 0 0 0 0 13M12 12h.01M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9.2 9.2 0 0 1 0 13"/></svg></span>Controle RFID</button>
+        <button data-page="ferramentas"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4L14 12l-2-2 2.7-3.7Z"/></svg></span>Ferramentas</button>
+        <button data-page="usuarios"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.5a3.2 3.2 0 0 1 0 6.2M18 14.5a5.2 5.2 0 0 1 3.5 5"/></svg></span>Usuários</button>
+        <button data-page="historico"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>Histórico</button>
+      </nav>
+      <div class="sidebar-card">
+        <div class="sidebar-card-top"><span></span> Sistema de patrimônio</div>
+        <p>Organize ferramentas, usuários e movimentações em um só lugar.</p>
+      </div>
+      <div class="sidebar-foot">SMART STOCK · SENAI<br>Controle inteligente de ferramentas<br>Versão 2.1 · Interface web</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="top-left">
+          <button class="mobile-toggle" id="mobileToggle" aria-label="Abrir menu">☰</button>
+          <div><div class="crumb">SMART STOCK / <span id="crumb">PAINEL</span></div><h1 id="pageHeading">Visão geral</h1></div>
+        </div>
+        <div class="top-actions">
+          <div class="system-pill" id="systemPill" title="Status da conexão com o servidor e banco de dados"><i class="dot" id="systemDot"></i><span id="systemLabel">Verificando sistema...</span></div>
+          <div class="avatar" id="topAvatar">SS</div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="page active" id="page-dashboard">
+          <div class="dash-hero">
+            <div class="hero-copy">
+              <div class="hero-kicker"><span></span> CONTROLE INTELIGENTE DE PATRIMÔNIO</div>
+              <h2>Suas ferramentas.<br><em>Sempre sob controle.</em></h2>
+              <p>Gerencie o inventário, acompanhe retiradas e registre devoluções com praticidade usando a tecnologia RFID.</p>
+              <div class="hero-buttons">
+                <button class="hero-btn primary" data-goto="rfid">Abrir controle RFID <span>→</span></button>
+                <button class="hero-btn" data-goto="ferramentas">Ver inventário <span>↗</span></button>
+              </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-orbit"></div>
+              <div class="device-card">
+                <div class="device-top"><span>SMART STOCK / INVENTÁRIO</span><span>● ATIVO</span></div>
+                <div class="device-middle">
+                  <div class="rfid-chip"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="20" y="17" width="24" height="30" rx="5"/><path d="M26 25h12M26 32h12M26 39h7M12 23a14 14 0 0 0 0 18M52 23a14 14 0 0 1 0 18M6 17a22 22 0 0 0 0 30M58 17a22 22 0 0 1 0 30"/></svg></div>
+                  <div class="device-lines"><i></i><i></i><i></i><i></i></div>
+                </div>
+              </div>
+              <div class="floating-tag"><div class="floating-tag-icon">✓</div><div><b>Movimentação segura</b><small>Registro automático via RFID</small></div></div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <article class="stat"><div class="stat-top">Total de ferramentas <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h8v8H8zM8 2v2M16 2v2M8 20v2M16 20v2"/></svg></span></div><strong id="totalTools">—</strong><small>Itens cadastrados no sistema</small><i class="stat-accent"></i></article>
+            <article class="stat"><div class="stat-top">Disponíveis <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></div><strong id="availableTools">—</strong><small>Prontas para retirada</small><i class="stat-accent"></i></article>
+            <article class="stat"><div class="stat-top">Em utilização <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17 17 7M8 7h9v9"/></svg></span></div><strong id="checkedTools">—</strong><small>Ferramentas retiradas</small><i class="stat-accent"></i></article>
+            <article class="stat"><div class="stat-top">Usuários <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.5a3.2 3.2 0 0 1 0 6.2M18 14.5a5.2 5.2 0 0 1 3.5 5"/></svg></span></div><strong id="totalUsers">—</strong><small>Pessoas cadastradas</small><i class="stat-accent"></i></article>
+          </div>
+
+          <div class="grid-main">
+            <div class="panel">
+              <div class="panel-head"><div><h3>Movimentações recentes</h3><p>Últimas retiradas e devoluções registradas</p></div><button class="link-btn" data-goto="historico">Ver histórico →</button></div>
+              <div class="activity-list" id="recentActivity"><div class="empty">Carregando movimentações...</div></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div><h3>Resumo do estoque</h3><p>Distribuição dos itens cadastrados</p></div></div>
+              <div class="stock-bars" id="stockBars"><div class="empty">Carregando estoque...</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div><h3>Acesso rápido</h3><p>Atalhos para as tarefas mais utilizadas</p></div></div>
+            <div class="quick-actions">
+              <button class="quick" data-goto="rfid"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 8a5.5 5.5 0 0 0 0 8M5 5a9.7 9.7 0 0 0 0 14M12 12h.01M16 8a5.5 5.5 0 0 1 0 8M19 5a9.7 9.7 0 0 1 0 14"/></svg></span><b>Controle RFID</b><small>Selecionar usuário e acompanhar leituras</small></button>
+              <button class="quick" data-goto="ferramentas"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4L14 12l-2-2 2.7-3.7Z"/></svg></span><b>Cadastrar ferramenta</b><small>Adicionar item e vincular uma tag</small></button>
+              <button class="quick" data-goto="usuarios"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.5a3.2 3.2 0 0 1 0 6.2M18 14.5a5.2 5.2 0 0 1 3.5 5"/></svg></span><b>Gerenciar usuários</b><small>Adicionar pessoas autorizadas</small></button>
+            </div>
+          </div>
+          <div class="footnote">SMART STOCK · CONTROLE INTELIGENTE DE FERRAMENTAS · SENAI</div>
+        </section>
+
+        <section class="page" id="page-rfid">
+          <div class="section-title"><div><h2>Controle RFID</h2><p>Defina o responsável e acompanhe a identificação das ferramentas.</p></div><button class="btn light" id="refreshRfid">↻ Atualizar dados</button></div>
+          <div class="rfid-banner"><div><div class="hero-kicker"><span></span> IDENTIFICAÇÃO AUTOMÁTICA</div><h3>Leitura inteligente de ferramentas</h3><p>O leitor identifica o UID da tag e registra a retirada ou devolução. Para receber leituras, mantenha o servidor e o programa leitor.js em execução.</p></div><div class="rfid-banner-art"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="21" y="18" width="22" height="28" rx="5"/><path d="M27 26h10M27 32h10M27 38h6M13 23a13 13 0 0 0 0 18M51 23a13 13 0 0 1 0 18M7 17a22 22 0 0 0 0 30M57 17a22 22 0 0 1 0 30"/></svg></div></div>
+          <div class="rfid-layout">
+            <div class="panel">
+              <div class="panel-head"><div><h3>Usuário responsável</h3><p>Defina quem fará a próxima movimentação</p></div></div>
+              <div class="field"><label for="activeUserSelect">Selecionar usuário</label><select class="input" id="activeUserSelect"><option value="">Carregando usuários...</option></select></div>
+              <div class="user-select-card"><div class="avatar" id="activeAvatar">?</div><div><b id="activeUserName">Nenhum usuário selecionado</b><small id="activeUserReg">Selecione um usuário acima</small></div><span class="badge amber" id="activeUserBadge">PENDENTE</span></div>
+              <button class="btn" id="saveActiveUser" style="width:100%">✓ Confirmar usuário ativo</button>
+              <div class="form-msg" id="activeUserMsg"></div>
+            </div>
+            <div class="panel reader-status">
+              <div class="reader-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="7" width="6" height="10" rx="2"/><path d="M5.5 8a9 9 0 0 0 0 8M2.5 5a13 13 0 0 0 0 14M18.5 8a9 9 0 0 1 0 8M21.5 5a13 13 0 0 1 0 14"/></svg></div>
+              <h3>Leitor aguardando aproximação</h3>
+              <p>O leitor físico é executado pelo programa <b>leitor.js</b> no computador conectado ao ESP8266. Esta tela consulta o banco de dados e atualiza os registros após cada leitura.</p>
+              <div class="reader-note"><strong>Importante para a leitura</strong>Mantenha o servidor e o processo RFID abertos em terminais separados. Feche o Monitor Serial da Arduino IDE antes de iniciar o leitor.js. O status desta página não confirma, sozinho, que o RC522 está lendo tags.</div>
+              <button class="btn light" id="refreshRfid2" style="margin-top:14px">↻ Atualizar movimentações</button>
+            </div>
+          </div>
+          <div class="panel"><div class="panel-head"><div><h3>Ferramentas vinculadas a tags</h3><p>UIDs reconhecidos pelo sistema</p></div></div><div class="table-wrap"><table><thead><tr><th>Ferramenta</th><th>UID RFID</th><th>Status</th></tr></thead><tbody id="rfidToolsBody"><tr><td class="empty" colspan="3">Carregando...</td></tr></tbody></table></div></div>
+          <div class="footnote">SMART STOCK · MÓDULO RFID · SENAI</div>
+        </section>
+
+        <section class="page" id="page-ferramentas">
+          <div class="section-title"><div><h2>Ferramentas</h2><p>Cadastro, identificação e disponibilidade do patrimônio.</p></div></div>
+          <div class="two-col">
+            <div class="panel form-panel"><h3>Nova ferramenta</h3><p>Cadastre o nome e o UID da tag RFID que será vinculada ao item.</p>
+              <form id="toolForm">
+                <div class="field"><label for="toolName">Nome da ferramenta</label><input id="toolName" maxlength="80" placeholder="Ex.: Alicate amperímetro" required></div>
+                <div class="field"><label for="toolUid">UID da tag RFID</label><input id="toolUid" maxlength="40" placeholder="Ex.: E9 4F 15 05" required><div class="hint">Use o código exibido pelo leitor RFID, mantendo os números e letras na ordem.</div></div>
+                <button class="btn" style="width:100%" type="submit">＋ Cadastrar ferramenta</button><div class="form-msg" id="toolMsg"></div>
+              </form>
+            </div>
+            <div class="panel"><div class="panel-head"><div><h3>Inventário</h3><p id="toolCountLabel">Ferramentas cadastradas</p></div></div>
+              <div class="toolbar"><div class="search"><input id="toolSearch" placeholder="Buscar por nome ou UID..."></div><button class="btn light" id="reloadTools" aria-label="Recarregar ferramentas">↻</button></div>
+              <div class="table-wrap"><table><thead><tr><th>Ferramenta</th><th>UID RFID</th><th>Status</th><th>Ações</th></tr></thead><tbody id="toolsBody"><tr><td class="empty" colspan="4">Carregando...</td></tr></tbody></table></div>
+            </div>
+          </div>
+          <div class="footnote">SMART STOCK · INVENTÁRIO · SENAI</div>
+        </section>
+
+        <section class="page" id="page-usuarios">
+          <div class="section-title"><div><h2>Usuários</h2><p>Gerencie as pessoas que podem retirar e devolver ferramentas.</p></div></div>
+          <div class="two-col">
+            <div class="panel form-panel"><h3>Novo usuário</h3><p>Cadastre o nome e a matrícula do responsável.</p>
+              <form id="userForm"><div class="field"><label for="userName">Nome completo</label><input id="userName" maxlength="100" placeholder="Nome do usuário" required></div><div class="field"><label for="userReg">Matrícula</label><input id="userReg" maxlength="40" placeholder="Ex.: 005" required></div><button class="btn" style="width:100%" type="submit">＋ Cadastrar usuário</button><div class="form-msg" id="userMsg"></div></form>
+            </div>
+            <div class="panel"><div class="panel-head"><div><h3>Usuários cadastrados</h3><p id="userCountLabel">Pessoas autorizadas</p></div></div><div class="toolbar"><div class="search"><input id="userSearch" placeholder="Buscar por nome ou matrícula..."></div><button class="btn light" id="reloadUsers" aria-label="Recarregar usuários">↻</button></div><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Matrícula</th><th>Ações</th></tr></thead><tbody id="usersBody"><tr><td class="empty" colspan="3">Carregando...</td></tr></tbody></table></div></div>
+          </div>
+          <div class="footnote">SMART STOCK · CADASTROS · SENAI</div>
+        </section>
+
+        <section class="page" id="page-historico">
+          <div class="section-title"><div><h2>Histórico de movimentações</h2><p>Consulte as retiradas e devoluções registradas no banco de dados.</p></div><button class="btn light" id="reloadHistory">↻ Atualizar histórico</button></div>
+          <div class="panel"><div class="toolbar"><div class="search"><input id="historySearch" placeholder="Buscar ferramenta, usuário ou UID..."></div><select class="input" id="historyFilter" style="max-width:170px"><option value="todos">Todas as ações</option><option value="Retirada">Retiradas</option><option value="Devolução">Devoluções</option></select></div><div class="table-wrap"><table><thead><tr><th>Data e hora</th><th>Ferramenta</th><th>Responsável</th><th>Ação</th><th>UID</th></tr></thead><tbody id="historyBody"><tr><td class="empty" colspan="5">Carregando...</td></tr></tbody></table></div></div>
+          <div class="footnote">SMART STOCK · HISTÓRICO · SENAI</div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><h3 id="modalTitle">Editar registro</h3><div id="modalContent"></div><div class="modal-actions"><button class="btn light" id="modalCancel">Cancelar</button><button class="btn" id="modalConfirm">Salvar alterações</button></div></div></div>
+
+  <script>
+    const state={users:[],tools:[],history:[],activeUser:null,page:'dashboard',modalAction:null};
+    const $=id=>document.getElementById(id);
+    const api=async(url,options={})=>{const res=await fetch(url,{headers:{'Content-Type':'application/json',...(options.headers||{})},...options});let data={};try{data=await res.json()}catch{}if(!res.ok)throw new Error(data.erro||data.error||`Erro HTTP ${res.status}`);return data};
+    function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3000)}
+    function msg(id,text,type=''){const el=$(id);el.textContent=text;el.className='form-msg '+type}
+    function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    function initials(s){return String(s||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()}
+    function dateText(v){if(!v)return '—';let d=new Date(String(v).replace(' ','T'));if(Number.isNaN(d.getTime()))return v;return d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
+    function statusBadge(s){return String(s).toLowerCase()==='disponível'?'<span class="badge green">● Disponível</span>':'<span class="badge amber">● Retirada</span>'}
+
+    async function checkHealth(){
+      try{
+        const health=await api('/api/health');
+        $('systemDot').className='dot ok';
+        $('systemLabel').textContent=health?.ok?'Servidor e banco online':'Servidor online';
+        $('systemPill').title='API e banco de dados respondendo. Isso não confirma a conexão física do leitor RFID.';
+      }catch(error){
+        $('systemDot').className='dot error';
+        $('systemLabel').textContent='Servidor desconectado';
+        $('systemPill').title='Não foi possível consultar o servidor. Verifique se npm start está em execução.';
+      }
+    }
+
+    function go(page){
+      state.page=page;
+      document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
+      document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+      const names={dashboard:['Visão geral','PAINEL'],rfid:['Controle RFID','RFID'],ferramentas:['Ferramentas','INVENTÁRIO'],usuarios:['Usuários','CADASTROS'],historico:['Histórico','MOVIMENTAÇÕES']};
+      $('pageHeading').textContent=names[page][0];$('crumb').textContent=names[page][1];$('sidebar').classList.remove('open');
+      if(page==='dashboard')loadDashboard();if(page==='rfid')loadRfid();if(page==='ferramentas')loadTools();if(page==='usuarios')loadUsers();if(page==='historico')loadHistory();
+    }
+    document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+    document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
+    $('mobileToggle').onclick=()=>$('sidebar').classList.toggle('open');
+
+    async function loadUsers(){try{state.users=await api('/api/usuarios');renderUsers();fillUserSelect()}catch(e){msg('userMsg',e.message,'error')}}
+    async function loadTools(){try{state.tools=await api('/api/ferramentas');renderTools();renderRfidTools()}catch(e){toast(e.message)}}
+    async function loadHistory(){try{state.history=await api('/api/historico');renderHistory()}catch(e){toast(e.message)}}
+    async function loadDashboard(){
+      try{
+        const [users,tools,hist]=await Promise.all([api('/api/usuarios'),api('/api/ferramentas'),api('/api/historico')]);
+        state.users=users;state.tools=tools;state.history=hist;
+        const available=tools.filter(x=>x.status==='Disponível').length,checked=tools.length-available;
+        $('totalTools').textContent=tools.length;$('availableTools').textContent=available;$('checkedTools').textContent=checked;$('totalUsers').textContent=users.length;
+        const recent=hist.slice(0,5);
+        $('recentActivity').innerHTML=recent.length?recent.map(x=>`<div class="activity"><div class="activity-ico ${x.acao==='Retirada'?'out':''}">${x.acao==='Retirada'?'↗':'↙'}</div><div class="activity-main"><b>${esc(x.nome)}</b><span>${esc(x.usuario||'Usuário não identificado')} · ${esc(x.acao)}</span></div><div class="activity-time">${dateText(x.data_hora)}</div></div>`).join(''):'<div class="empty">Nenhuma movimentação registrada.</div>';
+        const total=tools.length||1;
+        $('stockBars').innerHTML=`<div><div class="bar-label"><b>Disponíveis</b><span>${available} ferramenta(s)</span></div><div class="bar"><i style="width:${available/total*100}%"></i></div></div><div><div class="bar-label"><b>Em utilização</b><span>${checked} ferramenta(s)</span></div><div class="bar"><i style="width:${checked/total*100}%;background:linear-gradient(90deg,#d99a35,#f0c36e)"></i></div></div><div><div class="bar-label"><b>Usuários cadastrados</b><span>${users.length} pessoa(s)</span></div><div class="bar"><i style="width:${Math.min(users.length*10,100)}%;background:linear-gradient(90deg,#8056d8,#b49af3)"></i></div></div>`;
+      }catch(e){toast('Não foi possível carregar o painel: '+e.message)}
+    }
+    function renderTools(){const q=$('toolSearch').value.toLowerCase();const rows=state.tools.filter(x=>(x.nome+' '+x.uid).toLowerCase().includes(q));$('toolCountLabel').textContent=`${state.tools.length} ferramenta(s) cadastrada(s)`;$('toolsBody').innerHTML=rows.length?rows.map(x=>`<tr><td><span class="tool-name">${esc(x.nome)}</span></td><td><span class="uid">${esc(x.uid)}</span></td><td>${statusBadge(x.status)}</td><td><div class="actions"><button class="btn light small" onclick="editTool(${x.id})">Editar</button><button class="btn danger small" onclick="deleteTool(${x.id})">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Nenhuma ferramenta encontrada.</td></tr>'}
+    function renderUsers(){const q=$('userSearch').value.toLowerCase();const rows=state.users.filter(x=>(x.nome+' '+x.matricula).toLowerCase().includes(q));$('userCountLabel').textContent=`${state.users.length} usuário(s) cadastrado(s)`;$('usersBody').innerHTML=rows.length?rows.map(x=>`<tr><td><span class="tool-name">${esc(x.nome)}</span></td><td><span class="uid">${esc(x.matricula)}</span></td><td><div class="actions"><button class="btn light small" onclick="editUser(${x.id})">Editar</button><button class="btn danger small" onclick="deleteUser(${x.id})">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Nenhum usuário encontrado.</td></tr>';fillUserSelect()}
+    function renderHistory(){const q=$('historySearch').value.toLowerCase(),f=$('historyFilter').value;const rows=state.history.filter(x=>(f==='todos'||x.acao===f)&&(`${x.nome} ${x.uid} ${x.usuario||''} ${x.matricula||''}`).toLowerCase().includes(q));$('historyBody').innerHTML=rows.length?rows.map(x=>`<tr><td>${dateText(x.data_hora)}</td><td><span class="tool-name">${esc(x.nome)}</span></td><td>${esc(x.usuario||'Não identificado')}<div class="muted" style="font-size:8px">${esc(x.matricula||'—')}</div></td><td>${x.acao==='Retirada'?'<span class="badge amber">↗ Retirada</span>':'<span class="badge green">↙ Devolução</span>'}</td><td><span class="uid">${esc(x.uid)}</span></td></tr>`).join(''):'<tr><td colspan="5" class="empty">Nenhuma movimentação encontrada.</td></tr>'}
+    function fillUserSelect(){const sel=$('activeUserSelect');const current=sel.value;sel.innerHTML='<option value="">Selecione um usuário...</option>'+state.users.map(u=>`<option value="${u.id}">${esc(u.nome)} · ${esc(u.matricula)}</option>`).join('');if(state.activeUser)sel.value=String(state.activeUser.id);else if(current)sel.value=current;updateActivePreview()}
+    function updateActivePreview(){const id=Number($('activeUserSelect').value),u=state.users.find(x=>x.id===id);$('activeAvatar').textContent=u?initials(u.nome):'?';$('activeUserName').textContent=u?u.nome:'Nenhum usuário selecionado';$('activeUserReg').textContent=u?`Matrícula ${u.matricula}`:'Selecione um usuário acima';$('activeUserBadge').textContent=u?'SELECIONADO':'PENDENTE';$('activeUserBadge').className='badge '+(u?'green':'amber')}
+    async function loadRfid(){await Promise.all([loadUsers(),loadTools()]);try{const a=await api('/api/usuario-ativo');state.activeUser=a.usuario||null;if(state.activeUser)$('activeUserSelect').value=String(state.activeUser.id);updateActivePreview()}catch(e){toast(e.message)}}
+    function renderRfidTools(){$('rfidToolsBody').innerHTML=state.tools.length?state.tools.map(x=>`<tr><td><b>${esc(x.nome)}</b></td><td><span class="uid">${esc(x.uid)}</span></td><td>${statusBadge(x.status)}</td></tr>`).join(''):'<tr><td colspan="3" class="empty">Nenhuma tag cadastrada.</td></tr>'}
+
+    $('activeUserSelect').addEventListener('change',updateActivePreview);
+    $('saveActiveUser').onclick=async()=>{const u=state.users.find(x=>x.id===Number($('activeUserSelect').value));if(!u)return msg('activeUserMsg','Selecione um usuário antes de confirmar.','error');try{const r=await api('/api/usuario-ativo',{method:'POST',body:JSON.stringify({usuario_id:u.id,nome:u.nome,matricula:u.matricula})});state.activeUser=r.usuario;msg('activeUserMsg','Usuário ativo confirmado. Pode aproximar a tag RFID.','success');toast('Usuário ativo: '+u.nome)}catch(e){msg('activeUserMsg',e.message,'error')}};
+    $('toolForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/ferramentas',{method:'POST',body:JSON.stringify({nome:$('toolName').value.trim(),uid:$('toolUid').value.trim().toUpperCase()})});$('toolForm').reset();msg('toolMsg','Ferramenta cadastrada com sucesso.','success');toast('Ferramenta adicionada');await loadTools()}catch(e){msg('toolMsg',e.message,'error')}};
+    $('userForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/usuarios',{method:'POST',body:JSON.stringify({nome:$('userName').value.trim(),matricula:$('userReg').value.trim()})});$('userForm').reset();msg('userMsg','Usuário cadastrado com sucesso.','success');toast('Usuário adicionado');await loadUsers()}catch(e){msg('userMsg',e.message,'error')}};
+    function openModal(title,fields,save){$('modalTitle').textContent=title;$('modalContent').innerHTML=fields;$('modalBackdrop').classList.add('show');state.modalAction=save;$('modalConfirm').onclick=async()=>{try{await state.modalAction();$('modalBackdrop').classList.remove('show');toast('Alterações salvas');if(state.page==='ferramentas')await loadTools();if(state.page==='usuarios')await loadUsers()}catch(e){toast(e.message)}}}
+    $('modalCancel').onclick=()=>$('modalBackdrop').classList.remove('show');$('modalBackdrop').onclick=e=>{if(e.target===$('modalBackdrop'))$('modalBackdrop').classList.remove('show')};
+    window.editTool=id=>{const x=state.tools.find(t=>t.id===id);openModal('Editar ferramenta',`<div class="field"><label>Nome da ferramenta</label><input id="editName" value="${esc(x.nome)}"></div><div class="field"><label>UID RFID (não editável)</label><input value="${esc(x.uid)}" disabled></div>`,async()=>{await api('/api/ferramentas/'+id,{method:'PUT',body:JSON.stringify({nome:$('editName').value.trim()})})})};
+    window.deleteTool=async id=>{const x=state.tools.find(t=>t.id===id);if(!confirm(`Excluir a ferramenta "${x.nome}"?`))return;try{await api('/api/ferramentas/'+id,{method:'DELETE'});toast('Ferramenta excluída');await loadTools()}catch(e){toast(e.message)}};
+    window.editUser=id=>{const x=state.users.find(u=>u.id===id);openModal('Editar usuário',`<div class="field"><label>Nome completo</label><input id="editUserName" value="${esc(x.nome)}"></div><div class="field"><label>Matrícula</label><input id="editUserReg" value="${esc(x.matricula)}"></div>`,async()=>{await api('/api/usuarios/'+id,{method:'PUT',body:JSON.stringify({nome:$('editUserName').value.trim(),matricula:$('editUserReg').value.trim()})})})};
+    window.deleteUser=async id=>{const x=state.users.find(u=>u.id===id);if(!confirm(`Excluir o usuário "${x.nome}"?`))return;try{await api('/api/usuarios/'+id,{method:'DELETE'});toast('Usuário excluído');await loadUsers()}catch(e){toast(e.message)}};
+
+    $('toolSearch').oninput=renderTools;$('userSearch').oninput=renderUsers;$('historySearch').oninput=renderHistory;$('historyFilter').onchange=renderHistory;
+    $('reloadTools').onclick=loadTools;$('reloadUsers').onclick=loadUsers;$('reloadHistory').onclick=loadHistory;$('refreshRfid').onclick=loadRfid;$('refreshRfid2').onclick=async()=>{await loadTools();await loadHistory();toast('Dados atualizados')};
+    async function boot(){await Promise.all([loadDashboard(),checkHealth()]);}
+    boot();
+    setInterval(()=>{checkHealth();if(state.page==='dashboard')loadDashboard();if(state.page==='historico')loadHistory();if(state.page==='rfid'){loadTools();loadHistory()}},12000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+SMART STOCK 2.1 — INTERFACE VISUAL E RESPONSIVA
+================================================
+
+O QUE FOI ATUALIZADO
+- Novo visual inspirado na referência enviada: paleta azul, painel moderno e elementos gráficos.
+- Página inicial com banner ilustrado, indicadores, resumo do estoque e movimentações recentes.
+- Navegação redesenhada e adaptada para computador, tablet e celular.
+- Telas RFID, ferramentas, usuários e histórico com o mesmo padrão visual.
+- Indicador superior consulta /api/health para mostrar o estado real da API e do banco de dados.
+- Mantidas as operações de cadastro, edição, exclusão, pesquisa, usuário ativo e histórico.
+- Banco de dados original preservado, incluindo usuários, ferramentas e movimentações.
+
+IMPORTANTE SOBRE O RFID
+O indicador "Servidor e banco online" confirma apenas que a API e o banco respondem.
+Ele NÃO confirma que o ESP8266/RC522 está lendo tags. Para a leitura física, o
+firmware e o processo leitor.js precisam estar em execução e conectados corretamente.
+
+REQUISITOS
+- Node.js instalado no computador.
+- ESP8266 D1 Mini e módulo RC522 conectados.
+- Biblioteca MFRC522 instalada na Arduino IDE.
+- Porta serial configurada em COM8 por padrão (se necessário, ajuste RFID_PORTA em leitor.js
+  ou defina a variável de ambiente RFID_PORTA).
+
+INSTALAÇÃO
+1. Extraia o ZIP em uma pasta.
+2. Abra a pasta SmartStock_Completo no VS Code.
+3. Abra o terminal nessa pasta e execute: npm install
+4. Não apague nem substitua smartstock.db. O arquivo já contém os dados existentes.
+5. Não é necessário executar npm run db:init para usar o banco que acompanha o ZIP.
+
+FIRMWARE RFID
+1. Abra smart_stock_rfid.ino na Arduino IDE.
+2. Selecione a placa ESP8266 e a porta correta.
+3. Envie o código para a placa.
+4. Feche o Monitor Serial e a Arduino IDE para liberar a porta COM8.
+
+EXECUÇÃO (DOIS TERMINAIS)
+Terminal 1 — servidor web e banco:
+  npm start
+
+Terminal 2 — leitor RFID:
+  npm run rfid
+
+SITE
+Abra no navegador: http://localhost:3000
+
+COMO USAR
+1. Em Usuários, confira ou cadastre as pessoas.
+2. Em Ferramentas, confira ou cadastre cada ferramenta com o UID da tag.
+3. Em Controle RFID, selecione e confirme o usuário responsável.
+4. Com npm start e npm run rfid ativos, aproxime a tag do RC522.
+5. O sistema alterna entre Retirada e Devolução e grava a movimentação.
+
+DIAGNÓSTICO
+- No terminal do leitor, procure SMARTSTOCK|READY e SMARTSTOCK|ALIVE.
+- Ao aproximar uma tag, deve aparecer SMARTSTOCK|RFID|UID.
+- Se a porta estiver ocupada, feche o Monitor Serial da Arduino IDE.
+- Se não aparecer SMARTSTOCK|ALIVE, confira COM8, 115200 baud e o firmware enviado.
+- Se aparecer FERRAMENTA NÃO CADASTRADA, confira o UID cadastrado no site.
+- Se aparecer NENHUM USUÁRIO SELECIONADO, selecione e confirme um usuário no site.
+
+CONFERÊNCIA
+Os arquivos JavaScript foram verificados com node --check, os identificadores da interface
+foram conferidos e o banco foi verificado mantendo 4 usuários, 2 ferramentas e 91 movimentações.
+A integração física precisa ser testada no computador com o ESP8266 e o RC522 conectados.
